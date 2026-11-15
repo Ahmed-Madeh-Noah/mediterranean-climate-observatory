@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mediterranean Sea Climate Observatory · Team Solari-X</title>
+    <meta name="description"
+        content="Interactive Earth system trend observatory for the Mediterranean Sea and coastal cities — built by Team Solari-X for the NASA Space Apps Challenge." />
+    <link rel="icon" type="image/png" href="assets/Solari-X_V2.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="brand">
+                <img src="assets/Solari-X_V2.png" alt="Team Solari-X emblem" width="34" height="34" />
+                <div>
+                    <div class="brand-title">Mediterranean Sea Climate Observatory</div>
+                    <div class="brand-sub">Team Solari-X · NASA Space Apps Challenge</div>
+                </div>
+            </div>
+            <button id="theme-toggle" class="btn sm" type="button" aria-pressed="false">Dark theme</button>
+        </div>
+        <nav class="nav-bar" aria-label="Observatory views">
+            <div id="tabs" role="tablist"></div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero & Headline KPI Strip (Visible on Overview) -->
+        <section id="hero" aria-labelledby="hero-title">
+            <div class="hero-head">
+                <div>
+                    <span class="eyebrow">Be An Earth System Trend Detective · Mediterranean Basin</span>
+                    <h1 id="hero-title">Separating real climate trends from natural year-to-year noise</h1>
+                    <p>
+                        Multi-decadal satellite and in-situ observations across the Mediterranean Sea and three coastal
+                        cities—tested with autocorrelation-robust standard errors, non-parametric rank statistics, and
+                        false-discovery controls.
+                    </p>
+                </div>
+                <div class="btn-row">
+                    <button class="btn primary" type="button" data-go="detective">Open Data Detective</button>
+                    <button class="btn" type="button" data-go="statistics">Full statistical table</button>
+                </div>
+            </div>
+            <div id="kpis" aria-label="Headline trend indicators"></div>
+        </section>
+
+        <!-- 1. Overview Tab -->
+        <section id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+            <div class="card">
+                <div class="card-head">
+                    <div>
+                        <span class="eyebrow">Normalized Comparison · Z-Scores</span>
+                        <h2>Four Earth system records on one shared scale</h2>
+                        <p class="muted">
+                            Each time series is centered on its own mean and divided by its standard deviation (σ) so
+                            warming, sea-level rise, ocean color, and coastal rainfall can be viewed side by side.
+                        </p>
+                    </div>
+                    <div id="zchips" class="chips" role="group" aria-label="Toggle headline series"></div>
+                </div>
+                <div id="plot-z" class="plot-box" role="img"
+                    aria-label="Standardized multi-variable time series for the Mediterranean Sea and Alexandria"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <div>
+                        <span class="eyebrow">Synthesis</span>
+                        <h2>Key findings from the full records</h2>
+                    </div>
+                    <button class="btn sm" type="button" data-go="rain">Compare three coastal cities →</button>
+                </div>
+                <ul id="findings"></ul>
+            </div>
+        </section>
+
+        <!-- 2. Data Detective Tab -->
+        <section id="panel-detective" role="tabpanel" aria-labelledby="tab-detective" hidden>
+            <div class="det-layout">
+                <aside class="det-sidebar" aria-label="Trend investigation controls">
+                    <div class="ctrl-group">
+                        <span class="ctrl-label">1. Select region or city</span>
+                        <div id="place-seg" role="group" aria-label="Select region or city"></div>
+                    </div>
+
+                    <div class="ctrl-group">
+                        <span class="ctrl-label">2. Select variable</span>
+                        <div id="varlist" role="group" aria-label="Select Earth system variable"></div>
+                    </div>
+
+                    <div class="ctrl-group">
+                        <span class="ctrl-label">Guided detective cases</span>
+                        <div id="cases" role="group" aria-label="Pre-configured trend investigation cases"></div>
+                    </div>
+
+                    <div class="ctrl-group">
+                        <span class="ctrl-label">3. Select year window</span>
+                        <div class="range-row">
+                            <div class="range-pair">
+                                <label for="r-start">Start year <output id="o-start" for="r-start">1982</output></label>
+                                <input id="r-start" type="range" min="1982" max="2015" value="1982" />
+                            </div>
+                            <div class="range-pair">
+                                <label for="r-end">End year <output id="o-end" for="r-end">2025</output></label>
+                                <input id="r-end" type="range" min="1992" max="2025" value="2025" />
+                            </div>
+                        </div>
+                        <div id="span-note" class="num">44 years selected of 44 available</div>
+                        <div class="btn-row">
+                            <button id="btn-full" class="btn sm" type="button">Full record</button>
+                            <button id="btn-demo" class="btn sm primary" type="button">Watch the trend appear</button>
+                        </div>
+                    </div>
+
+                    <div class="ctrl-group">
+                        <span class="ctrl-label">4. Trend &amp; regime overlays</span>
+                        <div class="chips">
+                            <button id="t-band" class="chip" type="button" aria-pressed="true">95% band</button>
+                            <button id="t-sen" class="chip" type="button" aria-pressed="false">Theil–Sen</button>
+                            <button id="t-cp" class="chip" type="button" aria-pressed="false">Shift &amp; hinge</button>
+                        </div>
+                    </div>
+                </aside>
+
+                <div class="det-main">
+                    <div id="about" class="card"></div>
+
+                    <div class="card">
+                        <div id="plot-det" class="plot-box" role="img"
+                            aria-label="Interactive time series and regression fit"></div>
+                    </div>
+
+                    <div id="verdict" class="verdict" role="status" aria-live="polite"></div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <div>
+                                <span class="eyebrow">Live Re-Computation</span>
+                                <h3>Slope &amp; uncertainty for your selected window</h3>
+                            </div>
+                        </div>
+                        <div id="readouts"></div>
+                        <div id="pub-note" style="margin-top:14px"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <div>
+                                <span class="eyebrow">Autocorrelation &amp; Regime Diagnostics</span>
+                                <h3>Four-test evidence check &amp; structural stability</h3>
+                            </div>
+                        </div>
+                        <div id="evidence" class="table-wrap" style="margin-bottom:16px"></div>
+                        <div id="adv-cells" style="margin-bottom:18px"></div>
+                        <div class="card-head">
+                            <div>
+                                <h4>Sliding-window slope stability</h4>
+                                <p id="roll-sub" class="muted" style="font-size:0.84rem"></p>
+                            </div>
+                            <div id="win-chips" class="chips" role="group" aria-label="Sliding window length"></div>
+                        </div>
+                        <div id="plot-roll" class="plot-box" role="img"
+                            aria-label="Sliding-window slope stability plot"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <div>
+                                <span class="eyebrow">Selected Slice</span>
+                                <h3>Annual values &amp; linear residuals</h3>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:10px">
+                                <span id="copy-msg" class="muted" style="font-size:0.8rem" role="status"></span>
+                                <button id="btn-copy" class="btn sm" type="button">Copy CSV</button>
+                            </div>
+                        </div>
+                        <div class="table-wrap" style="max-height:320px;overflow-y:auto">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="n">Year</th>
+                                        <th class="n">Observed</th>
+                                        <th class="n">OLS Fit</th>
+                                        <th class="n">Residual</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="det-rows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Rain Compare Tab -->
+        <section id="panel-rain" role="tabpanel" aria-labelledby="tab-rain" hidden>
+            <div class="card">
+                <div class="card-head">
+                    <div>
+                        <span class="eyebrow">NASA GPM IMERG · 2001–2024</span>
+                        <h2>Coastal rainfall in Alexandria, Athens, and Barcelona</h2>
+                        <p class="muted">
+                            Complete annual rainfall totals (mm) at three 0.1° coastal land cells across the eastern and
+                            western Mediterranean, with ordinary least-squares trend lines.
+                        </p>
+                    </div>
+                    <div id="rchips" class="chips" role="group" aria-label="Toggle rainfall stations"></div>
+                </div>
+                <div id="plot-rain-all" class="plot-box" role="img"
+                    aria-label="Annual precipitation time series for Alexandria, Athens, and Barcelona"></div>
+            </div>
+
+            <div class="grid-2" style="margin-top:20px">
+                <div class="card">
+                    <span class="eyebrow">Normalized Rate Comparison</span>
+                    <h3>Decadal change as % of station mean</h3>
+                    <p class="muted" style="font-size:0.84rem">
+                        Horizontal whiskers show 95% Newey–West HAC confidence intervals. Intervals spanning zero
+                        indicate no statistically reliable trend.
+                    </p>
+                    <div id="plot-forest" class="plot-box" role="img"
+                        aria-label="Forest plot comparing percentage precipitation trends per decade"></div>
+                </div>
+
+                <div class="card">
+                    <span class="eyebrow">Spatial Coherence</span>
+                    <h3>Do wet and dry years occur together?</h3>
+                    <p class="muted" style="font-size:0.84rem">
+                        Pairwise Pearson correlation (r) across annual rainfall totals (2001–2024).
+                    </p>
+                    <div id="corr" style="margin:16px 0"></div>
+                    <p id="corr-note" class="muted" style="font-size:0.84rem"></p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <div>
+                        <span class="eyebrow">Multiple-Testing Adjustment</span>
+                        <h3>Three-city trend comparison &amp; Benjamini–Hochberg q-values</h3>
+                    </div>
+                </div>
+                <div class="table-wrap" style="margin-bottom:14px">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>City</th>
+                                <th>Verdict</th>
+                                <th class="n">Mean</th>
+                                <th class="n">OLS / dec</th>
+                                <th class="n">95% HAC CI</th>
+                                <th class="n">HAC p</th>
+                                <th class="n">BH q</th>
+                                <th class="n">Theil–Sen / dec</th>
+                                <th class="n">MK τ (p)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rain-body"></tbody>
+                    </table>
+                </div>
+                <div id="rain-note"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <div>
+                        <span class="eyebrow">Climatological Extremes</span>
+                        <h3>Station rainfall profile (2001–2024)</h3>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>City</th>
+                                <th class="n">Grid cell</th>
+                                <th class="n">Wettest year</th>
+                                <th class="n">Driest year</th>
+                                <th class="n">Interannual SD</th>
+                                <th class="n">Peak 30-min rate</th>
+                                <th>Wettest month</th>
+                                <th>Driest month</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prof-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Variables Tab -->
+        <section id="panel-variables" role="tabpanel" aria-labelledby="tab-variables" hidden>
+            <div class="card" style="margin-bottom:20px">
+                <span class="eyebrow">Dataset Catalog</span>
+                <h2>Nine Earth system variables across sea and coast</h2>
+                <p class="muted">
+                    Six basin-wide physical and biological ocean records paired with three coastal satellite
+                    precipitation records. Click any card to load that series into the Data Detective.
+                </p>
+            </div>
+            <div id="vguide"></div>
+        </section>
+
+        <!-- 5. Seasonality Tab -->
+        <section id="panel-seasons" role="tabpanel" aria-labelledby="tab-seasons" hidden>
+            <div class="card">
+                <div class="card-head">
+                    <div>
+                        <span class="eyebrow">Annual Phytoplankton Cycle · Copernicus Ocean Color</span>
+                        <h2>Mediterranean chlorophyll-a seasonal cycle</h2>
+                        <p class="muted">
+                            Monthly basin mean ± 1 interannual standard deviation (1998–2025). Winter mixing brings
+                            nutrients to the sunlit surface; summer stratification depletes them.
+                        </p>
+                    </div>
+                </div>
+                <div id="plot-chl-season" class="plot-box" role="img"
+                    aria-label="Monthly climatology of Mediterranean chlorophyll-a concentration"></div>
+            </div>
+
+            <div class="grid-2" style="margin-top:20px">
+                <div class="card">
+                    <span class="eyebrow">Seasonal Rainfall Volume · GPM IMERG</span>
+                    <h3>Mean monthly precipitation depth (mm)</h3>
+                    <p class="muted" style="font-size:0.84rem">
+                        Alexandria and Athens peak in winter (Dec–Jan) with near-zero summer rain, whereas Barcelona
+                        peaks in autumn (Sep–Oct) and spring.
+                    </p>
+                    <div id="plot-rain-season" class="plot-box" role="img"
+                        aria-label="Monthly mean rainfall depth across Alexandria, Athens, and Barcelona"></div>
+                </div>
+
+                <div class="card">
+                    <span class="eyebrow">Convective Intensity · GPM IMERG</span>
+                    <h3>Maximum recorded half-hourly rain rate (mm/h)</h3>
+                    <p class="muted" style="font-size:0.84rem">
+                        Peak 30-minute rain intensity recorded in each calendar month (2001–2024), highlighting
+                        convective autumn and winter storm bursts.
+                    </p>
+                    <div id="plot-rain-rate" class="plot-box" role="img"
+                        aria-label="Monthly peak half-hourly rain rates across Alexandria, Athens, and Barcelona"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. Region Map Tab -->
+        <section id="panel-map" role="tabpanel" aria-labelledby="tab-map" hidden>
+            <div class="card">
+                <div class="card-head">
+                    <div>
+                        <span class="eyebrow">Spatial Domains &amp; Sampling Footprints</span>
+                        <h2>Where each dataset is measured</h2>
+                        <p class="muted">
+                            Comparing basin-averaged products with single-grid-cell coastal stations requires tracking
+                            exact spatial footprints.
+                        </p>
+                    </div>
+                </div>
+                <div id="mapbox"></div>
+                <div class="map-legend" aria-label="Map legend">
+                    <span>
+                        <span class="swatch"
+                            style="background:var(--s-chl);border-radius:2px;width:12px;height:12px"></span>
+                        Copernicus Mediterranean sea mask (area-weighted marine extent)
+                    </span>
+                    <span>
+                        <span class="swatch"
+                            style="background:var(--s-sla);border-radius:2px;width:12px;height:12px"></span>
+                        KNMI Climate Explorer Mediterranean bounding box (SST, SLA, OHC, salinity)
+                    </span>
+                    <span>
+                        <span class="swatch" style="background:var(--s-rain)"></span>
+                        Alexandria 0.1° cell (31.25°N, 29.95°E)
+                    </span>
+                    <span>
+                        <span class="swatch" style="background:var(--s-ath)"></span>
+                        Athens 0.1° cell (38.05°N, 23.65°E)
+                    </span>
+                    <span>
+                        <span class="swatch" style="background:var(--s-bcn)"></span>
+                        Barcelona 0.1° cell (41.45°N, 2.15°E)
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. Statistics Tab -->
+        <section id="panel-statistics" role="tabpanel" aria-labelledby="tab-statistics" hidden>
+            <div class="card">
+                <div class="card-head">
+                    <div>
+                        <span class="eyebrow">Reproducible Benchmark Table</span>
+                        <h2>Published full-period trend statistics across all nine records</h2>
+                        <p class="muted">
+                            Slopes are reported per decade. Parametric inference uses ordinary least squares with
+                            Newey–West HAC standard errors; non-parametric inference uses Mann–Kendall rank correlation
+                            and Theil–Sen median pairwise slopes.
+                        </p>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Variable</th>
+                                <th>Verdict</th>
+                                <th class="n">Period (n)</th>
+                                <th class="n">OLS / dec</th>
+                                <th class="n">95% HAC CI</th>
+                                <th class="n">HAC p</th>
+                                <th class="n">Theil–Sen / dec</th>
+                                <th class="n">MK τ (p)</th>
+                                <th class="n">BH q</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stat-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-3" style="margin-top:20px">
+                <div class="card">
+                    <span class="eyebrow">1 · Parametric + Memory</span>
+                    <h3>OLS with Newey–West HAC</h3>
+                    <p>
+                        Climate time series rarely consist of independent yearly draws—warm ocean anomalies persist
+                        across consecutive years. Newey–West standard errors inflate uncertainty using Bartlett-weighted
+                        residual autocovariances so serial correlation does not produce false significance.
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="eyebrow">2 · Distribution-Free</span>
+                    <h3>Mann–Kendall &amp; Theil–Sen</h3>
+                    <p>
+                        Coastal precipitation is heavily skewed by rare storm years. Theil–Sen takes the median of all
+                        pairwise slopes between years, resisting single-year outliers, while Mann–Kendall tests
+                        monotonic rank order without assuming Gaussian residuals.
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="eyebrow">3 · Multiplicity Control</span>
+                    <h3>Benjamini–Hochberg FDR</h3>
+                    <p>
+                        Testing multiple variables or multiple cities simultaneously increases the chance of a false
+                        positive at α = 0.05. Benjamini–Hochberg adjusted q-values control the expected false discovery
+                        rate across each hypothesis family.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. Guardrails Tab -->
+        <section id="panel-guardrails" role="tabpanel" aria-labelledby="tab-guardrails" hidden>
+            <div class="card">
+                <span class="eyebrow">Scientific Integrity &amp; Limitations</span>
+                <h2>Methodological guardrails for interpreting trend claims</h2>
+                <p class="muted">
+                    Responsible Earth system trend detection requires stating what a dataset can and cannot support
+                    before drawing policy or ecological conclusions.
+                </p>
+            </div>
+
+            <div class="grid-2" style="margin-top:20px">
+                <div class="card">
+                    <span class="eyebrow">Guardrail 1</span>
+                    <h3>Short windows manufacture false trends</h3>
+                    <p>
+                        Over 10–15 year slices, natural decadal oscillations (such as the Atlantic Multidecadal
+                        Oscillation or local storm clustering) easily masquerade as climate trends or mask real ones.
+                        Always inspect sliding-window stability before trusting a short record.
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="eyebrow">Guardrail 2</span>
+                    <h3>Autocorrelation inflates plain t-tests</h3>
+                    <p>
+                        Upper-ocean heat content and surface salinity have strong multi-year memory (r₁ &gt; 0.6). A
+                        standard OLS t-test treats 76 correlated years as 76 independent samples, understating p-values
+                        by orders of magnitude.
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="eyebrow">Guardrail 3</span>
+                    <h3>Basin means vs. single 0.1° grid cells</h3>
+                    <p>
+                        Basin-averaged SST, sea level, and chlorophyll smooth out local weather noise over ~2.5 million
+                        km². By contrast, GPM IMERG rainfall series represent single ~10 km × 10 km coastal land pixels
+                        where one convective storm can double the annual total.
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="eyebrow">Guardrail 4</span>
+                    <h3>Correlation is not causal attribution</h3>
+                    <p>
+                        Observing concurrent warming, sea-level rise, and declining surface chlorophyll is physically
+                        consistent with thermal expansion and stronger water-column stratification, but statistical
+                        trend tests alone do not partition anthropogenic vs. internal forcing.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        Mediterranean Sea Climate Observatory · Built by Team Solari-X for the NASA Space Apps Challenge (“Be An Earth
+        System Trend Detective”). Data via NOAA OI SST v2, Met Office Hadley Centre (HadISST1 &amp; EN4), Copernicus
+        Marine Service, KNMI Climate Explorer, and NASA GPM IMERG.
+    </footer>
+
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+    <script src="js/data.js"></script>
+    <script src="js/stats.js"></script>
+    <script src="js/adv.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
